@@ -1,0 +1,15 @@
+{
+    "name": "publishpress/edd-license-handler",
+    "type": "library",
+    "license": "GPL-2",
+    "authors": [
+        {
+            "name": "EasyDigitalDownloads",
+            "email": "contact@easydigitaldownloads.com"
+        },
+        {
+            "name": "PublishPress",
+            "email": "help@publishpress.com"
+        }
+    ]
+}
