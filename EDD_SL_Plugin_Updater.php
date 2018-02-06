@@ -9,7 +9,7 @@ if ( ! class_exists( 'EDD_SL_Plugin_Updater' ) ) :
  * Allows plugins to use their own update API.
  *
  * @author Easy Digital Downloads
- * @version 1.6.14
+ * @version 1.6.14.2
  */
 class EDD_SL_Plugin_Updater {
 
