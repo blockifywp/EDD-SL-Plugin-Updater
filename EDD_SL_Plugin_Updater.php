@@ -3,6 +3,8 @@
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) exit;
 
+if ( ! class_exists( 'EDD_SL_Plugin_Updater' ) ) :
+
 /**
  * Allows plugins to use their own update API.
  *
