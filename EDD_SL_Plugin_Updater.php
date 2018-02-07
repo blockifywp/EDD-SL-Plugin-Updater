@@ -491,3 +491,5 @@ class EDD_SL_Plugin_Updater {
 	}
 
 }
+
+endif; // end class_exists check
