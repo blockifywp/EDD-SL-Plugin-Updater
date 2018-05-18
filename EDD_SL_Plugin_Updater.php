@@ -1,8 +1,6 @@
 <?php
 
 // Exit if accessed directly
-if ( ! defined( 'ABSPATH' ) ) exit;
-
 if ( ! class_exists( 'EDD_SL_Plugin_Updater' ) ) :
 
 /**

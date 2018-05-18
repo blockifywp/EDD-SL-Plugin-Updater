@@ -8,8 +8,6 @@
  * @version 1.1
  */
 
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
-
 if ( ! class_exists( 'EDD_License' ) ) :
 
 /**
