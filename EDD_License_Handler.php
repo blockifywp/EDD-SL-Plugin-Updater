@@ -5,7 +5,7 @@
  * This class should simplify the process of adding license information
  * to new EDD extensions.
  *
- * @version 1.1
+ * @version 1.1.0.2
  */
 
 if ( ! class_exists( 'EDD_License' ) ) :
