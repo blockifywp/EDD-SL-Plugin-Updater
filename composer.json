@@ -1,6 +1,8 @@
 {
   "name": "alledia/edd-license-handler",
   "type": "library",
+  "description": "EDD License Handler for WordPress Plugins",
+  "keywords": ["edd", "license", "wordpress"],
   "license": "GPL-2.0-or-later",
   "authors": [
     {
@@ -16,6 +18,9 @@
       "email": "help@alledia.com"
     }
   ],
+  "require": {
+    "php": ">=5.4.0"
+  },
   "autoload": {
     "files": [
       "EDD_License_Handler.php",
