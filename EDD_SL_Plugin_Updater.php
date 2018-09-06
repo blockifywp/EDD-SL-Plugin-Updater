@@ -1,7 +1,11 @@
 <?php
 
+namespace Alledia;
+
 // Exit if accessed directly
-if ( ! class_exists( 'EDD_SL_Plugin_Updater' ) ) :
+if ( ! class_exists( 'Alledia\\EDD_SL_Plugin_Updater' ) ) {
+	return;
+}
 
 /**
  * Allows plugins to use their own update API.
@@ -489,5 +493,3 @@ class EDD_SL_Plugin_Updater {
 	}
 
 }
-
-endif; // end class_exists check
