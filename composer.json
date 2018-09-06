@@ -23,7 +23,6 @@
   },
   "autoload": {
     "files": [
-      "EDD_License_Handler.php",
       "EDD_SL_Plugin_Updater.php"
     ]
   }
