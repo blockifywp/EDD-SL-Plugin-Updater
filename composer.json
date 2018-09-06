@@ -1,8 +1,8 @@
 {
-  "name": "alledia/edd-license-handler",
+  "name": "alledia/edd-sl-plugin-updater",
   "type": "library",
-  "description": "EDD License Handler for WordPress Plugins",
-  "keywords": ["edd", "license", "wordpress"],
+  "description": "EDD Updates Handler for WordPress Plugins",
+  "keywords": ["edd", "updates", "wordpress"],
   "license": "GPL-2.0-or-later",
   "authors": [
     {
