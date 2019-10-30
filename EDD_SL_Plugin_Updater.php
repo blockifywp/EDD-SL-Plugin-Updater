@@ -78,7 +78,7 @@ class EDD_SL_Plugin_Updater
         add_filter('plugins_api', [$this, 'plugins_api_filter'], 10, 3);
         remove_action('after_plugin_row_' . $this->name, 'wp_plugin_update_row', 10);
         add_action('after_plugin_row_' . $this->name, [$this, 'show_update_notification'], 10, 2);
-        add_action('admin_init', [$this, 'show_changelog']);
+        add_action('admin_head', [$this, 'show_changelog']);
 
     }
 
@@ -515,15 +515,19 @@ class EDD_SL_Plugin_Updater
                 }
             }
 
+            do_action('publishpress_debug_write_log', 'The request returned: ' . print_r($version_info, true),
+                __METHOD__, __LINE__);
+
             $this->set_version_info_cache($version_info, $cache_key);
-
         }
 
-        if ( ! empty($version_info) && isset($version_info->sections['changelog'])) {
-            echo '<div style="background:#fff;padding:10px;">' . $version_info->sections['changelog'] . '</div>';
-        }
+        if ( ! empty($version_info)) {
+            $version_info->sections = (array)$version_info->sections;
 
-        exit;
+            if (isset($version_info->sections['changelog'])) {
+                echo '<div style="background:#fff;padding:10px;">' . $version_info->sections['changelog'] . '</div>';
+            }
+
+            exit;
+        }
     }
-
-}
