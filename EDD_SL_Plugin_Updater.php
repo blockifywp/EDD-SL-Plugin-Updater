@@ -11,7 +11,7 @@ if ( ! class_exists('Alledia\\EDD_SL_Plugin_Updater')) {
  * Allows plugins to use their own update API.
  *
  * @author  Easy Digital Downloads
- * @version 1.6.16.1
+ * @version 1.6.16.2
  */
 class EDD_SL_Plugin_Updater
 {
@@ -27,12 +27,13 @@ class EDD_SL_Plugin_Updater
     /**
      * Class constructor.
      *
-     * @uses plugin_basename()
-     * @uses hook()
-     *
      * @param string $_api_url     The URL pointing to the custom API endpoint.
      * @param string $_plugin_file Path to the plugin file.
      * @param array  $_api_data    Optional data to send with API calls.
+     *
+     * @uses hook()
+     *
+     * @uses plugin_basename()
      */
     public function __construct($_api_url, $_plugin_file, $_api_data = null)
     {
@@ -53,9 +54,10 @@ class EDD_SL_Plugin_Updater
         /**
          * Fires after the $edd_plugin_data is setup.
          *
+         * @param array $edd_plugin_data Array of EDD SL plugin data.
+         *
          * @since x.x.x
          *
-         * @param array $edd_plugin_data Array of EDD SL plugin data.
          */
         do_action('post_edd_sl_plugin_updater_setup', $edd_plugin_data);
 
@@ -67,9 +69,9 @@ class EDD_SL_Plugin_Updater
     /**
      * Set up WordPress filters to hook into WP's update process.
      *
+     * @return void
      * @uses add_filter()
      *
-     * @return void
      */
     public function init()
     {
@@ -78,7 +80,7 @@ class EDD_SL_Plugin_Updater
         add_filter('plugins_api', [$this, 'plugins_api_filter'], 10, 3);
         remove_action('after_plugin_row_' . $this->name, 'wp_plugin_update_row', 10);
         add_action('after_plugin_row_' . $this->name, [$this, 'show_update_notification'], 10, 2);
-        add_action('admin_init', [$this, 'show_changelog']);
+        add_action('admin_head', [$this, 'show_changelog']);
 
     }
 
@@ -90,32 +92,42 @@ class EDD_SL_Plugin_Updater
      * It is reassembled from parts of the native WordPress plugin update code.
      * See wp-includes/update.php line 121 for the original wp_update_plugins() function.
      *
-     * @uses api_request()
-     *
      * @param array $_transient_data Update array build by WordPress.
      *
      * @return array Modified update array with custom plugin data.
+     * @uses api_request()
+     *
      */
     public function check_update($_transient_data)
     {
 
         global $pagenow;
 
+        $debugMessage = sprintf('Checking update for: %s, version %s', $this->slug, $this->version);
+        do_action('publishpress_debug_write_log', $debugMessage, __METHOD__, __LINE__);
+
         if ( ! is_object($_transient_data)) {
             $_transient_data = new stdClass;
         }
 
         if ('plugins.php' == $pagenow && is_multisite()) {
+            do_action('publishpress_debug_write_log', 'Return transient data for multisite', __METHOD__, __LINE__);
+
             return $_transient_data;
         }
 
         if ( ! empty($_transient_data->response) && ! empty($_transient_data->response[$this->name]) && false === $this->wp_override) {
+            do_action('publishpress_debug_write_log', 'Returning transient data: ' . print_r($_transient_data, true),
+                __METHOD__, __LINE__);
+
             return $_transient_data;
         }
 
         $version_info = $this->get_cached_version_info();
 
         if (false === $version_info) {
+            do_action('publishpress_debug_write_log', 'Return transient data for multisite', __METHOD__, __LINE__);
+
             $version_info = $this->api_request('plugin_latest_version', ['slug' => $this->slug, 'beta' => $this->beta]);
 
             $this->set_version_info_cache($version_info);
@@ -148,8 +160,14 @@ class EDD_SL_Plugin_Updater
         $cache = get_option($cache_key);
 
         if (empty($cache['timeout']) || time() > $cache['timeout']) {
-            return false; // Cache is expired
+            do_action('publishpress_debug_write_log', 'Cache is expired for the key: ' . $cache_key, __METHOD__,
+                __LINE__);
+
+            return false;
         }
+
+        do_action('publishpress_debug_write_log', 'Returning the cached value: ' . $cache['value'], __METHOD__,
+            __LINE__);
 
         return json_decode($cache['value']);
 
@@ -158,14 +176,14 @@ class EDD_SL_Plugin_Updater
     /**
      * Calls the API and, if successfull, returns the object delivered by the API.
      *
-     * @uses get_bloginfo()
-     * @uses wp_remote_post()
-     * @uses is_wp_error()
-     *
      * @param string $_action The requested action.
      * @param array  $_data   Parameters for the API action.
      *
      * @return false|object
+     * @uses get_bloginfo()
+     * @uses wp_remote_post()
+     * @uses is_wp_error()
+     *
      */
     private function api_request($_action, $_data)
     {
@@ -195,11 +213,20 @@ class EDD_SL_Plugin_Updater
         ];
 
         $verify_ssl = $this->verify_ssl();
-        $request    = wp_remote_post($this->api_url,
+
+        do_action('publishpress_debug_write_log',
+            'Requesting update info to the api. Params: ' . print_r($api_params, true), __METHOD__, __LINE__);
+
+        $request = wp_remote_post($this->api_url,
             ['timeout' => 15, 'sslverify' => $verify_ssl, 'body' => $api_params]);
 
         if ( ! is_wp_error($request)) {
             $request = json_decode(wp_remote_retrieve_body($request));
+        } else {
+            do_action('publishpress_debug_write_log', 'The request returned an error: ' . $request->get_error_message(),
+                __METHOD__, __LINE__);
+
+            return false;
         }
 
         if ($request && isset($request->sections)) {
@@ -218,14 +245,16 @@ class EDD_SL_Plugin_Updater
             }
         }
 
+        do_action('publishpress_debug_write_log', 'Returning: ' . print_r($request, true), __METHOD__, __LINE__);
+
         return $request;
     }
 
     /**
      * Returns if the SSL of the store should be verified.
      *
-     * @since  1.6.13
      * @return bool
+     * @since  1.6.13
      */
     private function verify_ssl()
     {
@@ -246,6 +275,7 @@ class EDD_SL_Plugin_Updater
 
         update_option($cache_key, $data, 'no');
 
+        do_action('publishpress_debug_write_log', 'Updated the cache: ' . $cache_key, __METHOD__, __LINE__);
     }
 
     /**
@@ -359,13 +389,13 @@ class EDD_SL_Plugin_Updater
     /**
      * Updates information on the "View version x.x details" page with custom data.
      *
-     * @uses api_request()
-     *
      * @param mixed  $_data
      * @param string $_action
      * @param object $_args
      *
      * @return object $_data
+     * @uses api_request()
+     *
      */
     public function plugins_api_filter($_data, $_action = '', $_args = null)
     {
@@ -399,7 +429,13 @@ class EDD_SL_Plugin_Updater
         //If we have no transient-saved value, run the API, set a fresh transient with the API value, and return that value too right now.
         if (empty($edd_api_request_transient)) {
 
+            do_action('publishpress_debug_write_log', 'No cached transient data for: ' . $this->slug, __METHOD__,
+                __LINE__);
+
             $api_response = $this->api_request('plugin_information', $to_send);
+
+            do_action('publishpress_debug_write_log', 'The API replied: ' . print_r($api_response, true), __METHOD__,
+                __LINE__);
 
             // Expires in 3 hours
             $this->set_version_info_cache($api_response, $cache_key);
@@ -407,7 +443,6 @@ class EDD_SL_Plugin_Updater
             if (false !== $api_response) {
                 $_data = $api_response;
             }
-
         } else {
             $_data = $edd_api_request_transient;
         }
@@ -431,6 +466,8 @@ class EDD_SL_Plugin_Updater
 
             $_data->banners = $new_banners;
         }
+
+        do_action('publishpress_debug_write_log', 'Returning the data: ' . print_r($_data, true), __METHOD__, __LINE__);
 
         return $_data;
     }
@@ -477,6 +514,8 @@ class EDD_SL_Plugin_Updater
                 __('Error', 'easy-digital-downloads'), ['response' => 403]);
         }
 
+        do_action('publishpress_debug_write_log', 'Showing the changelog for: ' . $this->slug, __METHOD__, __LINE__);
+
         $data         = $edd_plugin_data[$_REQUEST['slug']];
         $beta         = ! empty($data['beta']) ? true : false;
         $cache_key    = md5('edd_plugin_' . sanitize_key($_REQUEST['plugin']) . '_' . $beta . '_version_info');
@@ -500,6 +539,9 @@ class EDD_SL_Plugin_Updater
 
             if ( ! is_wp_error($request)) {
                 $version_info = json_decode(wp_remote_retrieve_body($request));
+            } else {
+                do_action('publishpress_debug_write_log',
+                    'The request returned an error: ' . $request->get_error_message(), __METHOD__, __LINE__);
             }
 
 
@@ -515,15 +557,19 @@ class EDD_SL_Plugin_Updater
                 }
             }
 
+            do_action('publishpress_debug_write_log', 'The request returned: ' . print_r($version_info, true),
+                __METHOD__, __LINE__);
+
             $this->set_version_info_cache($version_info, $cache_key);
-
         }
 
-        if ( ! empty($version_info) && isset($version_info->sections['changelog'])) {
-            echo '<div style="background:#fff;padding:10px;">' . $version_info->sections['changelog'] . '</div>';
-        }
+        if ( ! empty($version_info)) {
+            $version_info->sections = (array)$version_info->sections;
 
-        exit;
+            if (isset($version_info->sections['changelog'])) {
+                echo '<div style="background:#fff;padding:10px;">' . $version_info->sections['changelog'] . '</div>';
+            }
+
+            exit;
+        }
     }
-
-}
