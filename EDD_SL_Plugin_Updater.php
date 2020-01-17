@@ -2,6 +2,8 @@
 
 namespace Alledia;
 
+use stdClass;
+
 // Exit if accessed directly
 if ( ! class_exists('Alledia\\EDD_SL_Plugin_Updater')) {
     return;
