@@ -2,6 +2,8 @@
 
 namespace Alledia;
 
+use stdClass;
+
 // Exit if accessed directly
 if ( ! class_exists('Alledia\\EDD_SL_Plugin_Updater')) {
     return;
@@ -11,7 +13,7 @@ if ( ! class_exists('Alledia\\EDD_SL_Plugin_Updater')) {
  * Allows plugins to use their own update API.
  *
  * @author  Easy Digital Downloads
- * @version 1.6.16.3
+ * @version 1.6.16.4
  */
 class EDD_SL_Plugin_Updater
 {
@@ -179,7 +181,7 @@ class EDD_SL_Plugin_Updater
      * @param string $_action The requested action.
      * @param array  $_data   Parameters for the API action.
      *
-     * @return false|object
+     * @return false|object|void
      * @uses get_bloginfo()
      * @uses wp_remote_post()
      * @uses is_wp_error()
@@ -478,7 +480,7 @@ class EDD_SL_Plugin_Updater
      * @param array  $args
      * @param string $url
      *
-     * @return object $array
+     * @return array $array
      */
     public function http_request_args($args, $url)
     {
