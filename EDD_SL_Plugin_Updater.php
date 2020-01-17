@@ -179,7 +179,7 @@ class EDD_SL_Plugin_Updater
      * @param string $_action The requested action.
      * @param array  $_data   Parameters for the API action.
      *
-     * @return false|object
+     * @return false|object|void
      * @uses get_bloginfo()
      * @uses wp_remote_post()
      * @uses is_wp_error()
@@ -478,7 +478,7 @@ class EDD_SL_Plugin_Updater
      * @param array  $args
      * @param string $url
      *
-     * @return object $array
+     * @return array $array
      */
     public function http_request_args($args, $url)
     {
