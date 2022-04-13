@@ -13,9 +13,11 @@ if ( ! class_exists('Alledia\\EDD_SL_Plugin_Updater')) {
  * Allows plugins to use their own update API.
  *
  * @author Easy Digital Downloads
- * @version 1.6.19
+ * @version 1.6.20
  */
 class EDD_SL_Plugin_Updater {
+    
+    const VERSION = '1.6.20';
 
     private $api_url     = '';
     private $api_data    = array();
@@ -359,8 +361,11 @@ class EDD_SL_Plugin_Updater {
      */
     private function convert_object_to_array( $data ) {
         $new_data = array();
-        foreach ( $data as $key => $value ) {
-            $new_data[ $key ] = is_object( $value ) ? $this->convert_object_to_array( $value ) : $value;
+        
+        if (is_object($data) || is_array($data)) {
+            foreach ($data as $key => $value) {
+                $new_data[ $key ] = is_object($value) ? $this->convert_object_to_array($value) : $value;
+            }
         }
 
         return $new_data;
